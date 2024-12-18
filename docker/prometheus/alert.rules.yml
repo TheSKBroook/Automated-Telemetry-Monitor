@@ -1,0 +1,12 @@
+groups:
+- name: process_exporter_alerts
+  rules:
+  - alert: HeavyCpuUsage
+    expr: sum(rate(namedprocess_namegroup_cpu_seconds_total{groupname=~".+"}[1m])) by (groupname, instance) * 100 > 99
+    for: 10s
+    labels:
+      severity: warning
+    annotations:
+      title: Heavy cpu process
+      description: Heavy cpu process
+
