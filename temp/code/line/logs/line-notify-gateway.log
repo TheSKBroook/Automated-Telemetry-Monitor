@@ -1,0 +1,4 @@
+DEBUG:root:<Request 'http://172.20.10.2:5000/webhook' [POST]>
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): notify-api.line.me:443
+DEBUG:urllib3.connectionpool:https://notify-api.line.me:443 "POST /api/notify HTTP/1.1" 200 None
+INFO:werkzeug:172.18.0.2 - - [20/Dec/2024 15:15:04] "POST /webhook HTTP/1.1" 200 -
