@@ -1,0 +1,21 @@
+---
+- name: Deployment playbook
+  hosts: localhost
+  tasks:
+
+  - name: Update rule file to Prometheus
+    command:
+      python3 temp/config/converter.py
+    register: result
+    
+  - name: Find the pid of Prometheus
+    shell: |
+      ps -aux | grep prometheus | awk '{print $2}' | head -n 1
+    register: prometheus_pid
+    ignore_errors: yes
+
+  - name: kill the pid to update rule in prometheus
+    shell: |
+      kill -HUP {{ prometheus_pid.stdout }}
+    become: yes
+    ignore_errors: yes

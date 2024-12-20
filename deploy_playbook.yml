@@ -1,0 +1,223 @@
+---
+# Step 1: Verify Internet Connection
+- name: Verify Internet Connection
+  hosts: localhost
+  become: true
+  tasks:  
+
+  - name: Check Internet connectivity
+    shell: ping -c 1 8.8.8.8
+    register: internet_status
+    failed_when: internet_status.rc != 0
+    ignore_errors: yes
+
+  - name: Fail if no Internet connection
+    fail:
+      msg: "No Internet connection detected. Please check your network."
+    when: internet_status is failed
+
+# Step 2: Check and install SSH key 
+- name: ssh generate key pair
+  hosts: local
+  become: true
+  vars: 
+    ssh_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
+  tasks:
+
+    - name: Check presence of sshpass
+      command: which sshpass
+      register: sshpass_check
+      ignore_errors: yes
+    
+    - name: Install sshpass if not present
+      apt:
+        name: sshpass
+      when: sshpass_check.failed
+
+    - name: Check presence of sshkey
+      stat:
+        path: "{{ ssh_key_path }}"
+      register: ssh_key_status
+    
+    - name: Generate sshkey if not present
+      command: ssh-keygen -t rsa -f "{{ ssh_key_path }}" -N ""
+      when: not ssh_key_status.stat.exists
+
+    - name: Give access of id_rsa permission to user
+      file:
+        path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
+        mode: '0664'
+
+- name: Configure Passwordless SSH on Target Servers
+  hosts: targets
+  become: true
+  vars: 
+    ssh_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
+
+  tasks:
+    - name: Copy public SSH key to target Servers
+      authorized_key:
+        user: "{{ ansible_user }}"
+        key: "{{ lookup('file', ssh_key_path + '.pub') }}"
+
+# Step 3: Check and install docker 
+- name: Deploy product from scratch
+  hosts: local, targets
+  become: true
+  tasks:  
+  - name: Check if Docker is installed
+    command: docker --version
+    register: docker_installed
+    ignore_errors: yes
+
+  - name: Install Docker prerequisites and Docker only if not installed
+    block:
+      - name: Install dependencies for Docker
+        apt:
+          name: 
+            - ca-certificates
+            - curl
+            - gnupg
+          state: present
+          update_cache: yes
+
+      - name: Create Docker keyrings directory
+        file:
+          path: /etc/apt/keyrings
+          state: directory
+          mode: '0755'
+
+      - name: Add Docker's official GPG key
+        command: curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+        args:
+          creates: /etc/apt/keyrings/docker.asc
+
+      - name: Ensure Docker GPG key has correct permissions
+        file:
+          path: /etc/apt/keyrings/docker.asc
+          mode: '0644'
+
+      - name: Add Docker repository
+        shell: |
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+          $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | \
+          tee /etc/apt/sources.list.d/docker.list > /dev/null
+        args:
+          creates: /etc/apt/sources.list.d/docker.list
+
+      - name: Update package index
+        apt:
+          update_cache: yes
+
+      - name: Install Docker and related tools
+        apt:
+          name: 
+            - docker-ce
+            - docker-ce-cli
+            - containerd.io
+            - docker-buildx-plugin
+            - docker-compose-plugin
+          state: present
+    when: docker_installed is failed
+
+# Step 4: Check for Required Docker Images for host
+- name: Setting up relevent tools
+  hosts: local
+  become: true
+  tasks:
+
+  - name: Ensure Docker images are present
+    shell: docker images | grep {{ item }} | awk '{print $1}'
+    with_items:
+      - prom/prometheus
+      - grafana/grafana
+      - prom/alertmanager
+    ignore_errors: yes
+    register: image_check
+  
+  # - name: Print list of Docker images from image_check
+  #   debug:
+  #     msg: "{{ image_check.results | map(attribute='stdout') | list }}"
+
+  # - name: Check if each item is not in image_check results
+  #   debug:
+  #     msg: >
+  #       "Image {{ item }} is {{ 'missing' if item not in image_check.results | map(attribute='stdout') | list else 'present' }}"
+  #   with_items:
+  #     - prom/prometheus
+  #     - grafana/grafana
+  #     - prom/alertmanager
+
+  - name: Pull missing Docker images
+    shell: docker pull {{ item }}
+    with_items:
+      - prom/prometheus
+      - grafana/grafana
+      - prom/alertmanager
+    when: item not in image_check.results | map(attribute='stdout') | list
+
+# Step 5 Install node and process exporter to targets: ( optoinal )
+# 
+# - name: Install note and process exporter in targets
+#   hosts: targets
+#   become: true
+#   tasks: 
+#     - name: Ensure Docker images are present
+#       shell: docker images | grep {{ item }} | awk '{print $1}'
+#       with_items:
+#         - prom/node-exporter
+#         - ncabatoff/process-exporter
+#       ignore_errors: yes
+#       register: image_check
+    
+#     - name: Pull missing Docker images
+#       shell: docker pull {{ item }}
+#       with_items:
+#         - prom/node-exporter
+#         - ncabatoff/process-exporter
+#       when: item not in image_check.results | map(attribute='stdout') | list
+
+# Step 6: Install python required dependencies
+- name: install python required dependencies
+  hosts: local
+  become: true
+  tasks:
+    - name: install pip 
+      apt: 
+        name: python3-pip
+    
+    - name: install dependencies from requirement file
+      command:
+        cmd: pip install -r requirements.txt
+
+# Step 7: Writing Config
+- name: Deployment playbook
+  hosts: localhost
+  tasks:
+
+  - name: Gather target information from inventory
+    set_fact:
+      ips: "{{ ( groups['local'] + groups['targets'] ) | map('extract', hostvars, 'ansible_host') | list }}"
+      line_token: "Zs5pIbgUwg58UzqkYqOdlHzdro50eXywo40owIzWYkQ"
+
+  - name: Generate Prometheus configuration file
+    template:
+      src: docker/prometheus/prometheus.yml.j2
+      dest: docker/prometheus/prometheus.yml
+    vars:
+      host_ip: "{{ ips[0] }}"
+      target1_ip: "{{ ips[1] }}"
+      target2_ip: "{{ ips[2] }}"
+
+  - name: Generate alertmanager configuration file
+    template:
+      src: docker/alertmanager/alertmanager.yml.j2
+      dest: docker/alertmanager/alertmanager.yml
+    vars:
+      webhook_ip: "{{ ips[0] }}"
+      line_token: "{{ line_token }}"
+
+  - name: Update rule file to Prometheus
+    command:
+      python3 temp/config/converter.py
+    register: result

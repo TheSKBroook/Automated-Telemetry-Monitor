@@ -17,5 +17,3 @@ receivers:
         http_config:
           bearer_token: Zs5pIbgUwg58UzqkYqOdlHzdro50eXywo40owIzWYkQ
     
-
-
