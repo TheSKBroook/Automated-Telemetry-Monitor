@@ -1,6 +1,6 @@
 # Convert xlsx. file into yml format
 import pandas as pd
-import yaml, json, ast, math
+import yaml, json, ast, math, os
 
 data_dictionary = {
     "alert": "{Alert Name}_{Severity}",
@@ -9,6 +9,9 @@ data_dictionary = {
     "labels": {"severity": "{Severity}"},
     "annotations": {"summary": "{Summary}", "description": "{Description}"}
 }
+
+metrics_excel = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'metrics_excel.xlsx')
+rule_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'docker', 'prometheus','rules.yml')
 
 # 
 def fill(rule_dict, expression, severity):
@@ -30,7 +33,7 @@ def fill(rule_dict, expression, severity):
 
 def main():
     final_file = {'groups': []}
-    df = pd.read_excel('/home/eason/demo/temp/metrics_excel.xlsx')
+    df = pd.read_excel(metrics_excel)
     temp_dict = {}
     # 把yml前面架構架好
     for ind in df.index:
@@ -54,7 +57,7 @@ def main():
                     final_file['groups'][group_ind]['rules'].append(temp)
 
 
-    with open('/home/eason/demo/docker/prometheus/rules.yml', 'w') as file_yml:
+    with open(rule_path, 'w') as file_yml:
         yaml.safe_dump(final_file, file_yml, default_flow_style=False)
 
 

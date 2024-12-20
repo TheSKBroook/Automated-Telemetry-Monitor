@@ -62,7 +62,7 @@
 
 # Step 3: Check and install docker 
 - name: Deploy product from scratch
-  hosts: local, targets
+  hosts: local
   become: true
   tasks:  
   - name: Check if Docker is installed
@@ -134,19 +134,6 @@
       - prom/alertmanager
     ignore_errors: yes
     register: image_check
-  
-  # - name: Print list of Docker images from image_check
-  #   debug:
-  #     msg: "{{ image_check.results | map(attribute='stdout') | list }}"
-
-  # - name: Check if each item is not in image_check results
-  #   debug:
-  #     msg: >
-  #       "Image {{ item }} is {{ 'missing' if item not in image_check.results | map(attribute='stdout') | list else 'present' }}"
-  #   with_items:
-  #     - prom/prometheus
-  #     - grafana/grafana
-  #     - prom/alertmanager
 
   - name: Pull missing Docker images
     shell: docker pull {{ item }}
@@ -156,28 +143,7 @@
       - prom/alertmanager
     when: item not in image_check.results | map(attribute='stdout') | list
 
-# Step 5 Install node and process exporter to targets: ( optoinal )
-# 
-# - name: Install note and process exporter in targets
-#   hosts: targets
-#   become: true
-#   tasks: 
-#     - name: Ensure Docker images are present
-#       shell: docker images | grep {{ item }} | awk '{print $1}'
-#       with_items:
-#         - prom/node-exporter
-#         - ncabatoff/process-exporter
-#       ignore_errors: yes
-#       register: image_check
-    
-#     - name: Pull missing Docker images
-#       shell: docker pull {{ item }}
-#       with_items:
-#         - prom/node-exporter
-#         - ncabatoff/process-exporter
-#       when: item not in image_check.results | map(attribute='stdout') | list
-
-# Step 6: Install python required dependencies
+# Step 5: Install python required dependencies
 - name: install python required dependencies
   hosts: local
   become: true
@@ -190,7 +156,7 @@
       command:
         cmd: pip install -r requirements.txt
 
-# Step 7: Writing Config
+# Step 6: Writing Config
 - name: Deployment playbook
   hosts: localhost
   tasks:
