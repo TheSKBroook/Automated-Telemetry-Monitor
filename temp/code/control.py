@@ -3,7 +3,7 @@
 from flask import Flask, request
 import ansible_runner, yaml, os, configparser
 
-inventory_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'inventory', 'inventory.ini')
+inventory_file = os.path.abspath('inventory/inventory.ini')
 
 app = Flask(__name__)
 
@@ -37,7 +37,7 @@ def hook():
                 "PROCESS_NAME": useful_data['labels'].get('groupname', None)
             },
             inventory=inventory_file
-            )
+        )
 
     elif useful_data.get("status") == "resolved":
         ip = useful_data['labels']["instance"].split(":")[0]
