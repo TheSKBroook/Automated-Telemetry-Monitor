@@ -1,8 +1,8 @@
 ---
 # groups 1, handle HostHighCpuLoad
 - name: Automate CPU high usage monitoring and kill process
-  hosts: "{{ COMPUTE_NODE }}"
-  tags: HeavyCpuUsage
+  hosts: "{{ target }}"
+  tags: HeavyCpuUsage_Warning
   tasks:
 
     - name: Ask who am i
@@ -15,11 +15,11 @@
 
     - name: Debug process_name
       debug:
-        msg: "{{ PROCESS_NAME }}"
+        msg: "{{ groupname }}"
 
 
     - name: Find process ID by name
-      ansible.builtin.shell: ps -e -o pid,comm | grep -w "{{ PROCESS_NAME }}" | awk '{print $1}'
+      ansible.builtin.shell: ps -e -o pid,comm | grep -w "{{ groupname }}" | awk '{print $1}'
       register: process_pid
       ignore_errors: yes
 

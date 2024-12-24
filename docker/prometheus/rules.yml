@@ -193,3 +193,12 @@ groups:
     for: 0m
     labels:
       severity: Warning
+  - alert: HeavyCpuUsage_Warning
+    annotations:
+      description: Heavy CPU Process
+      summary: Heavy CPU Process
+    expr: sum(rate(namedprocess_namegroup_cpu_seconds_total{groupname=~".+"}[1m]))
+      by (groupname, instance) * 100 > 99
+    for: 10s
+    labels:
+      severity: Warning
