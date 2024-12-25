@@ -10,8 +10,8 @@ data_dictionary = {
     "annotations": {"summary": "{Summary}", "description": "{Description}"}
 }
 
-metrics_excel = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'metrics_excel.xlsx')
-rule_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'docker', 'prometheus','rules.yml')
+metrics_excel = os.path.join(os.path.dirname(__file__), 'metrics_excel.xlsx')
+rule_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'docker', 'prometheus','rules.yml')
 
 # 
 def fill(rule_dict, expression, severity):

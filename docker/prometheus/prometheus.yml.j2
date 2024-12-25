@@ -11,15 +11,11 @@ scrape_configs:
   - job_name: "prometheus"
     static_configs:
       - targets: ["{{ host_ip }}:9090"]
-  - job_name: "target1_node_exporter"
+  {% for ip in ips %}
+- job_name: "target{{ loop.index }}_node_exporter"
     static_configs:
-      - targets: ["{{ target1_ip }}:9100"]
-  - job_name: "target2_node_exporter"
+      - targets: ["{{ ip }}:9100"]
+  - job_name: "target{{ loop.index }}_process_exporter"
     static_configs:
-      - targets: ["{{ target2_ip }}:9100"]
-  - job_name: "target1_process_exporter"
-    static_configs:
-      - targets: ["{{ target1_ip }}:9256"]
-  - job_name: "target2_process_exporter"
-    static_configs:
-      - targets: ["{{ target2_ip }}:9256"]
+      - targets: ["{{ ip }}:9256"]
+  {% endfor %}

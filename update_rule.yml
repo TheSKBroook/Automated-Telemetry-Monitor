@@ -5,7 +5,7 @@
 
   - name: Update rule file to Prometheus
     command:
-      python3 temp/config/converter.py
+      python3 feature/converter.py
     register: result
     
   - name: Find the pid of Prometheus

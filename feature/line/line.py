@@ -11,7 +11,7 @@ from flask import Flask, render_template, request, jsonify
 
 import manage_logs
 
-LOG_PATH = 'temp/code/line/logs/line-notify-gateway.log'
+LOG_PATH = 'feature/line/logs/line-notify-gateway.log'
 LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify'
 app = Flask(__name__)
 
@@ -37,8 +37,8 @@ def firing_alert(request):
         icon = "🔷🔷🔷 😎 🔷🔷🔷"
         status = "Resolved"
         time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
-    # header = {'Authorization':request.headers['AUTHORIZATION']}
-    header = {'Authorization':'Bearer Zs5pIbgUwg58UzqkYqOdlHzdro50eXywo40owIzWYkQ'}
+    header = {'Authorization':request.headers['AUTHORIZATION']}
+
 
     for alert in request.json['alerts']:
         # print(alert)

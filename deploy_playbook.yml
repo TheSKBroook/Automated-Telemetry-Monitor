@@ -163,27 +163,27 @@
 
   - name: Gather target information from inventory
     set_fact:
-      ips: "{{ ( groups['local'] + groups['targets'] ) | map('extract', hostvars, 'ansible_host') | list }}"
-      line_token: "Zs5pIbgUwg58UzqkYqOdlHzdro50eXywo40owIzWYkQ"
-
+      host: "{{ ( groups['local'] ) | map('extract', hostvars, 'ansible_host') | list }}"
+      targets: "{{ ( groups['targets'] ) | map('extract', hostvars, 'ansible_host') | list }}"
+      line_token: "{{ hostvars['localhost']['token'] }}"
+      
   - name: Generate Prometheus configuration file
     template:
       src: docker/prometheus/prometheus.yml.j2
       dest: docker/prometheus/prometheus.yml
     vars:
-      host_ip: "{{ ips[0] }}"
-      target1_ip: "{{ ips[1] }}"
-      target2_ip: "{{ ips[2] }}"
+      host_ip: "{{ host[0] }}"
+      ips: "{{ targets }}"  # Pass all targets after the first one
 
   - name: Generate alertmanager configuration file
     template:
       src: docker/alertmanager/alertmanager.yml.j2
       dest: docker/alertmanager/alertmanager.yml
     vars:
-      webhook_ip: "{{ ips[0] }}"
+      webhook_ip: "{{ host[0] }}"
       line_token: "{{ line_token }}"
 
   - name: Update rule file to Prometheus
     command:
-      python3 temp/config/converter.py
+      python3 feature/converter.py
     register: result
