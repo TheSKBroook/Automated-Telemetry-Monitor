@@ -16,6 +16,21 @@
       msg: "No Internet connection detected. Please check your network."
     when: internet_status is failed
 
+- name: Check Ansible Version
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Get Ansible version
+      debug:
+        msg: "Ansible version is newer than 2.10"
+      when: ansible_version.full is version('2.10', '>=')
+
+    - name: Notify if Ansible version is 2.10 or older
+      fail:
+        msg: "Ansible version is 2.10 or older"
+      when: ansible_version.full is version('2.10', '<')
+
+
 # Step 2: Check and install SSH key 
 - name: ssh generate key pair
   hosts: local
@@ -153,6 +168,7 @@
         name: python3-pip
     
     - name: install dependencies from requirement file
+      become: false
       command:
         cmd: pip install -r requirements.txt
 
