@@ -5,13 +5,13 @@ License: MIT
 """
 
 import logging
-import requests
+import requests, os
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 
 import manage_logs
 
-LOG_PATH = 'feature/line/logs/line-notify-gateway.log'
+LOG_PATH = os.path.join(os.path.dirname(__file__),'logs','line-notify-gateway.log')
 LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify'
 app = Flask(__name__)
 
