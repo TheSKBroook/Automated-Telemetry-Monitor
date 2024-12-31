@@ -1,5 +1,5 @@
 ---
-# Step 1: Verify Internet Connection
+# Step 1: Check Internet and Ansible version.
 - name: Verify Internet Connection
   hosts: localhost
   become: true
@@ -29,7 +29,6 @@
       fail:
         msg: "Ansible version is 2.10 or older"
       when: ansible_version.full is version('2.10', '<')
-
 
 # Step 2: Check and install SSH key 
 - name: ssh generate key pair
@@ -75,90 +74,7 @@
         user: "{{ ansible_user }}"
         key: "{{ lookup('file', ssh_key_path + '.pub') }}"
 
-# Step 3: Check and install docker 
-- name: Deploy product from scratch
-  hosts: local
-  become: true
-  tasks:  
-  - name: Check if Docker is installed
-    command: docker --version
-    register: docker_installed
-    ignore_errors: yes
-
-  - name: Install Docker prerequisites and Docker only if not installed
-    block:
-      - name: Install dependencies for Docker
-        apt:
-          name: 
-            - ca-certificates
-            - curl
-            - gnupg
-          state: present
-          update_cache: yes
-
-      - name: Create Docker keyrings directory
-        file:
-          path: /etc/apt/keyrings
-          state: directory
-          mode: '0755'
-
-      - name: Add Docker's official GPG key
-        command: curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-        args:
-          creates: /etc/apt/keyrings/docker.asc
-
-      - name: Ensure Docker GPG key has correct permissions
-        file:
-          path: /etc/apt/keyrings/docker.asc
-          mode: '0644'
-
-      - name: Add Docker repository
-        shell: |
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-          $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable" | \
-          tee /etc/apt/sources.list.d/docker.list > /dev/null
-        args:
-          creates: /etc/apt/sources.list.d/docker.list
-
-      - name: Update package index
-        apt:
-          update_cache: yes
-
-      - name: Install Docker and related tools
-        apt:
-          name: 
-            - docker-ce
-            - docker-ce-cli
-            - containerd.io
-            - docker-buildx-plugin
-            - docker-compose-plugin
-          state: present
-    when: docker_installed is failed
-
-# Step 4: Check for Required Docker Images for host
-- name: Setting up relevent tools
-  hosts: local
-  become: true
-  tasks:
-
-  - name: Ensure Docker images are present
-    shell: docker images | grep {{ item }} | awk '{print $1}'
-    with_items:
-      - prom/prometheus
-      - grafana/grafana
-      - prom/alertmanager
-    ignore_errors: yes
-    register: image_check
-
-  - name: Pull missing Docker images
-    shell: docker pull {{ item }}
-    with_items:
-      - prom/prometheus
-      - grafana/grafana
-      - prom/alertmanager
-    when: item not in image_check.results | map(attribute='stdout') | list
-
-# Step 5: Install python required dependencies
+# Step 3: Install python required dependencies
 - name: install python required dependencies
   hosts: local
   become: true
@@ -170,36 +86,85 @@
     - name: install dependencies from requirement file
       become: false
       command:
-        cmd: pip install -r requirements.txt
+        cmd: pip install -r deploy/requirements.txt
 
-# Step 6: Writing Config
-- name: Deployment playbook
+# Step 4: generate rule_file
+- name: Deployment configuration
   hosts: localhost
   tasks:
-
-  - name: Gather target information from inventory
-    set_fact:
-      host: "{{ ( groups['local'] ) | map('extract', hostvars, 'ansible_host') | list }}"
-      targets: "{{ ( groups['targets'] ) | map('extract', hostvars, 'ansible_host') | list }}"
-      line_token: "{{ hostvars['localhost']['token'] }}"
-      
-  - name: Generate Prometheus configuration file
-    template:
-      src: docker/prometheus/prometheus.yml.j2
-      dest: docker/prometheus/prometheus.yml
-    vars:
-      host_ip: "{{ host[0] }}"
-      ips: "{{ targets }}"  # Pass all targets after the first one
-
-  - name: Generate alertmanager configuration file
-    template:
-      src: docker/alertmanager/alertmanager.yml.j2
-      dest: docker/alertmanager/alertmanager.yml
-    vars:
-      webhook_ip: "{{ host[0] }}"
-      line_token: "{{ line_token }}"
 
   - name: Update rule file to Prometheus
     command:
       python3 feature/converter.py
     register: result
+
+# Step 5: Check required services
+- name: check existance of required services
+  hosts: local
+  become: true
+
+  tasks:
+  - name: install net-tools for netstat
+    apt:
+      name: net-tools
+
+  - name: check if service using port
+    command: netstat -tulpl | grep {{ item }}
+    loop:
+      - 9090
+      - 9093
+      - 3000
+    register: port_result
+    ignore_errors: true
+  
+  - name: Count actual successful detections
+    set_fact:
+      services_running: "{{ port_result.results | selectattr('stdout', 'search', regex_item) | list | length }}"
+    vars:
+      regex_item: "(9090|9093|3000)"
+
+  - name: Perform action based on services status 
+    block:
+
+      - name: Process to add configuration if all 3 services are running 
+        block: 
+
+          - debug:
+              msg: "All required services are running/ {Proceeding to the task}"
+
+          - name: Appends config
+            ansible.builtin.include_tasks: deploy/append_config.yml
+
+        when: services_running == "3"        
+
+      - name: Print failure message if 2 or 1 service is running
+        fail: 
+          msg: "Failure: Only {{ services_running }} required services are running."
+        when: services_running == "1" or services_running == "2"
+      
+      - name: Prompt to install services if none are running
+        when: services_running == "0"
+        block:
+
+          - pause:
+              prompt: "None of the required services are running. Do you want to install them? \n(yes/no)"
+            register: agree_install
+
+          - name: Validate user response
+            fail:
+              msg: "Invalid input. Please type only 'yes' or 'no'."
+            when: agree_install.user_input not in ['yes', 'Yes', 'Y', 'y', 'no', 'No', 'N', 'n']
+
+          - name: Print message to open services if user disagrees
+            fail:
+              msg: "Please manually start the required services (prometheus -> 9090, alertmanager -> 9093, grafana -> 3000)."
+            when: agree_install.user_input in ['no', 'No', 'N', 'n']
+          
+          - name: Install requried services
+            block:
+              - debug:
+                  msg: "Install required services..."
+              
+              - name: Install required services
+                ansible.builtin.include_tasks: deploy/deploy_docker.yml
+            when: agree_install.user_input in ['yes', 'Yes', 'Y', 'y']
