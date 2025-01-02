@@ -2,14 +2,13 @@
 # Step 1: Check Internet and Ansible version.
 - name: Verify Internet Connection
   hosts: localhost
-  become: true
+  connection: local
   tasks:  
 
   - name: Check Internet connectivity
     shell: ping -c 1 8.8.8.8
     register: internet_status
     failed_when: internet_status.rc != 0
-    ignore_errors: yes
 
   - name: Fail if no Internet connection
     fail:
@@ -18,6 +17,7 @@
 
 - name: Check Ansible Version
   hosts: localhost
+  connection: local
   gather_facts: no
   tasks:
     - name: Get Ansible version
@@ -30,53 +30,10 @@
         msg: "Ansible version is 2.10 or older"
       when: ansible_version.full is version('2.10', '<')
 
-# Step 2: Check and install SSH key 
-- name: ssh generate key pair
-  hosts: local
-  become: true
-  vars: 
-    ssh_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
-  tasks:
-
-    - name: Check presence of sshpass
-      command: which sshpass
-      register: sshpass_check
-      ignore_errors: yes
-    
-    - name: Install sshpass if not present
-      apt:
-        name: sshpass
-      when: sshpass_check.failed
-
-    - name: Check presence of sshkey
-      stat:
-        path: "{{ ssh_key_path }}"
-      register: ssh_key_status
-    
-    - name: Generate sshkey if not present
-      command: ssh-keygen -t rsa -f "{{ ssh_key_path }}" -N ""
-      when: not ssh_key_status.stat.exists
-
-    - name: Give access of id_rsa permission to user
-      file:
-        path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
-        mode: '0664'
-
-- name: Configure Passwordless SSH on Target Servers
-  hosts: targets
-  become: true
-  vars: 
-    ssh_key_path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
-
-  tasks:
-    - name: Copy public SSH key to target Servers
-      authorized_key:
-        user: "{{ ansible_user }}"
-        key: "{{ lookup('file', ssh_key_path + '.pub') }}"
-
-# Step 3: Install python required dependencies
+# Step 2: Install python required dependencies
 - name: install python required dependencies
   hosts: local
+  connection: local
   become: true
   tasks:
     - name: install pip 
@@ -88,9 +45,10 @@
       command:
         cmd: pip install -r deploy/requirements.txt
 
-# Step 4: generate rule_file
+# Step 3: generate rule_file
 - name: Deployment configuration
-  hosts: localhost
+  hosts: local
+  connection: local
   tasks:
 
   - name: Update rule file to Prometheus
@@ -98,73 +56,41 @@
       python3 feature/converter.py
     register: result
 
-# Step 5: Check required services
+# Step 4: Check required services
 - name: check existance of required services
   hosts: local
+  connection: local
   become: true
 
   tasks:
-  - name: install net-tools for netstat
-    apt:
-      name: net-tools
 
-  - name: check if service using port
-    command: netstat -tulpl | grep {{ item }}
-    loop:
-      - 9090
-      - 9093
-      - 3000
-    register: port_result
+  - name: check docker existing 
+    shell: docker ps --format "{{'{{.Names}}'}}" | grep {{ item }}
+    loop: 
+      - prometheus
+      - alertmanager
+      - grafana
+    register: docker_name_result
     ignore_errors: true
-  
-  - name: Count actual successful detections
+
+  - name: Check the count of missing containers
     set_fact:
-      services_running: "{{ port_result.results | selectattr('stdout', 'search', regex_item) | list | length }}"
-    vars:
-      regex_item: "(9090|9093|3000)"
+      missing_containers: >-
+        {{ docker_name_result.results | selectattr('rc', 'ne', 0) | map(attribute='item') | list }}
 
-  - name: Perform action based on services status 
-    block:
+  - name: Fail if some but not all containers are missing
+    fail:
+      msg: >-
+        The following containers are missing: {{ missing_containers | join(', ') }}
+        either close all prometheus, alertmanager and grafana to auto-download from this deployment
+        or manually download them via docker image
+    when: >
+      missing_containers | length > 0 and missing_containers | length < 3
 
-      - name: Process to add configuration if all 3 services are running 
-        block: 
-
-          - debug:
-              msg: "All required services are running/ {Proceeding to the task}"
-
-          - name: Appends config
-            ansible.builtin.include_tasks: deploy/append_config.yml
-
-        when: services_running == "3"        
-
-      - name: Print failure message if 2 or 1 service is running
-        fail: 
-          msg: "Failure: Only {{ services_running }} required services are running."
-        when: services_running == "1" or services_running == "2"
-      
-      - name: Prompt to install services if none are running
-        when: services_running == "0"
-        block:
-
-          - pause:
-              prompt: "None of the required services are running. Do you want to install them? \n(yes/no)"
-            register: agree_install
-
-          - name: Validate user response
-            fail:
-              msg: "Invalid input. Please type only 'yes' or 'no'."
-            when: agree_install.user_input not in ['yes', 'Yes', 'Y', 'y', 'no', 'No', 'N', 'n']
-
-          - name: Print message to open services if user disagrees
-            fail:
-              msg: "Please manually start the required services (prometheus -> 9090, alertmanager -> 9093, grafana -> 3000)."
-            when: agree_install.user_input in ['no', 'No', 'N', 'n']
-          
-          - name: Install requried services
-            block:
-              - debug:
-                  msg: "Install required services..."
-              
-              - name: Install required services
-                ansible.builtin.include_tasks: deploy/deploy_docker.yml
-            when: agree_install.user_input in ['yes', 'Yes', 'Y', 'y']
+  - name: Run another playbook if all containers are missing
+    ansible.builtin.include_tasks: deploy/deploy_docker.yml
+    when: "{{ missing_containers | length == 3 }}"
+  
+  - name: Run another playbook if all containers are missing
+    ansible.builtin.include_tasks: deploy/append_config.yml
+    when: "{{ missing_containers | length == 0 }}"

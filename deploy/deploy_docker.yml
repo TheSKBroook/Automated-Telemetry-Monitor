@@ -106,3 +106,8 @@
     vars:
       webhook_ip: "{{ host[0] }}"
       line_token: "{{ line_token }}"
+  
+  - name: open all the docker
+    shell:
+      cmd: docker compose up -d&
+      chdir: ./docker

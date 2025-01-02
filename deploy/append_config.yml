@@ -1,14 +1,15 @@
 ---
-- name: appends config
+- name: Appending config
   block: 
-    - name: prometheus config
+
+    - name: Get all running Docker containers
+      shell: docker ps --format "{{'{{.Names}}'}}"
+      register: running_containers
+
+    - name: prometheus config section
       block:
 
-      - name: Get all running Docker containers
-        shell: docker ps --format "{{'{{.Names}}'}}"
-        register: running_containers
-
-      - name: Find Prometheus container name
+      - name: Find prometheus container's name
         set_fact:
           prometheus_container_name: >-
             {{
@@ -17,7 +18,7 @@
         when: running_containers.stdout_lines | length > 0
 
       # need to know where the mount file is to change 
-      - name: Get Docker container details
+      - name: Get prometheus docker container details
         shell: docker inspect {{ prometheus_container_name }}
         register: docker_inspect_result
 
@@ -32,11 +33,7 @@
             }}/prometheus.yml
         when: docker_inspect_result.stdout is defined
 
-      - name: Debug the resolved prometheus.yml path
-        debug:
-          msg: "Prometheus configuration file path: {{ prometheus_config_path }}"
-
-      - name: prometheus appends rule_files
+      - name: Appends rule_files in prometheus file
         blockinfile: 
           path: "{{ prometheus_config_path }}"
           block: |
@@ -45,19 +42,16 @@
             {% endfilter %}
           insertafter: "^rule_files:"
         when: prometheus_config_path is defined
-    
-    - name: alertmanager config
-      block:
 
+      - name: Restart prometheus service
+        shell: docker exec {{ prometheus_container_name }} kill -s SIGHUP 1
+    
+    - name: alertmanager config section
+      block:
       - name: Gather target information from inventory
         set_fact:
           host: "{{ ( groups['local'] ) | map('extract', hostvars, 'ansible_host') | list }}"
-          targets: "{{ ( groups['targets'] ) | map('extract', hostvars, 'ansible_host') | list }}"
           line_token: "{{ hostvars['localhost']['token'] }}"
-
-      - name: Get all running Docker containers
-        shell: docker ps --format "{{'{{.Names}}'}}"
-        register: running_containers
 
       - name: Find alertmanager container name
         set_fact:
@@ -67,8 +61,7 @@
             }}
         when: running_containers.stdout_lines | length > 0
 
-      # need to know where the mount file is to change 
-      - name: Get Docker container details
+      - name: Get alertmanager docker container details
         shell: docker inspect {{ alertmanager_container_name }}
         register: docker_inspect_result
 
@@ -83,60 +76,13 @@
             }}/alertmanager.yml
         when: docker_inspect_result.stdout is defined
 
-      - name: alertmanager appends routes commands
-        blockinfile:
-          path: "{{ alertmanager_config_path }}"
-          marker: "# {mark} required routes -- add these routes in"
-          block: |
-            {% filter indent(width=0, first=true) %}
-            # routes:  
-            #   - receiver: "line"
-            #       group_wait: 10s
-            #       group_interval: 2m
-            #       repeat_interval: 1h
-            #     continue: true
-
-            #   - receiver: "actions"
-            #       group_wait: 10s
-            #       group_interval: 2m
-            #       repeat_interval: 1h
-            #     match_re:
-            #       severity: "Critical|Warning"
-            #     continue: true
-            
-            # Add existing receivers below 
-            #   - receiver: ADD_EXISTING_RECEIVERS
-            #     continue: true (mandatory)
-            {% endfilter %}
-          insertbefore: "^receivers:"
-        when: alertmanager_config_path is defined
-
-      - name: alertmanager appends receivers
+      - name: Generate alertmanager configuration file
+        template:
+          src: docker/alertmanager/alertmanager.yml.j2
+          dest: '{{alertmanager_config_path}}'
         vars:
           webhook_ip: "{{ host[0] }}"
           line_token: "{{ line_token }}"
-        blockinfile: 
-          path: "{{ alertmanager_config_path }}"
-          marker: "# {mark} appends receivers"
-          block:  |
-            {% filter indent(width=0, first=true) %}
-              - name: "line"
-                webhook_configs:
-                - url: 'http://{{ webhook_ip }}:5000/webhook'
-                  send_resolved: true
-                  http_config:
-                    bearer_token: {{ line_token }}
 
-              - name: "actions"
-                webhook_configs:
-                  - url: 'http://{{ webhook_ip }}:5100/webhookcallback'
-                    send_resolved: true
-                    insertafter: "^rule_files:"
-            {% endfilter %}
-          insertafter: "^receivers:"
-
-        when: alertmanager_config_path is defined
-
-    - name: A helpful reminder of what to look out for post-update
-      ansible.builtin.pause:
-        prompt: "Please check out alertmanager.yml. It needs configured by user!!!"
+      - name: restart alertamanger service
+        shell: docker exec {{ alertmanager_container_name }} kill -s SIGHUP 1

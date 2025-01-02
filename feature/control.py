@@ -28,7 +28,7 @@ class Controller:
                 "\nAlert ({}) from {} has been resolved.\n".format(self.data["alertname"], ip)
             )
 
-inventory_file = os.path.abspath('inventory/inventory.ini')
+inventory_file = os.path.abspath('inventory.ini')
 
 config = configparser.ConfigParser()
 config.read(inventory_file)
