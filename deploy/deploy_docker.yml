@@ -110,4 +110,8 @@
   - name: open all the docker
     shell:
       cmd: docker-compose up -d&
+<<<<<<< HEAD
       chdir: ./docker
+=======
+      chdir: ./docker
+>>>>>>> ee69d5fa238ec4fdee8beb80f4c80325a9defea9
