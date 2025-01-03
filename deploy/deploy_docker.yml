@@ -109,5 +109,5 @@
   
   - name: open all the docker
     shell:
-      cmd: docker compose up -d&
+      cmd: docker-compose up -d&
       chdir: ./docker
