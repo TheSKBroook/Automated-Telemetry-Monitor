@@ -102,11 +102,42 @@
   become: true
 
   tasks:
+    - name: Check if the Docker image exists
+      command: docker images -q code-docker
+      register: image_check
+      changed_when: false
 
-  - name: Build docker images
-    command:
-      cmd: docker build -t code-docker .
+    - name: Build Docker image if not found
+      command: docker build -t code-docker .
+      when: image_check.stdout == ""
+
+    - name: Check if the Docker container exists
+      command: docker ps -a --filter "name=webhook-container" --format "{{'{{.Names}}'}}"
+      register: container_check
+      changed_when: false
+
+    - name: Stop the container if it exists
+      command: docker stop webhook-container
+      when: container_check.stdout == "webhook-container"
+
+    - name: Remove the container if it exists
+      command: docker rm webhook-container
+      when: container_check.stdout == "webhook-container"
+
+    - name: Run the Docker container
+      command: docker run -d --name webhook-container -p 5100:5100 -p 5200:5200 code-docker
+
+# - name: Open line and control webhook service
+#   hosts: local
+#   connection: local
+#   become: true
+
+#   tasks:
+
+#   - name: Build docker images
+#     command:
+#       cmd: docker build -t code-docker .
   
-  - name: open up code-docker
-    command:
-      cmd: docker run -d --name webhook-container -p 5100:5100 -p 5200:5200 code-docker
+#   - name: open up code-docker
+#     command:
+#       cmd: docker run -d --name webhook-container -p 5100:5100 -p 5200:5200 code-docker
