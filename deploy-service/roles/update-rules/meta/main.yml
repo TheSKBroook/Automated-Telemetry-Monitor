@@ -1,0 +1,18 @@
+---
+galaxy_info:
+  role_name: update-rules
+  author: Eason Chang
+  description: "Add and update rule files from the excel file to the prometheus server"
+  company: FOXCONN
+  license: MIT
+  min_ansible_version: 2.9
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+  categories:
+    - monitoring
+    - code
+    - python
+dependencies: []

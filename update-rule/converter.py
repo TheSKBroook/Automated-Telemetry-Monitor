@@ -11,7 +11,8 @@ data_dictionary = {
 }
 
 metrics_excel = os.path.join(os.path.dirname(__file__), 'metrics_excel.xlsx')
-rule_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'docker', 'prometheus','rules.yml')
+rule_path = '../deploy-service/docker/prometheus/gb200_rules.yml'
+# os.path.join(os.path.dirname(os.path.dirname(__file__)), 'deploy-service', 'docker', 'prometheus','gb200_rules.yml')
 
 # 
 def fill(rule_dict, expression, severity):

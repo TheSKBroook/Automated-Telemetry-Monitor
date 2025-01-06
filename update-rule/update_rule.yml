@@ -1,0 +1,25 @@
+---
+- name: Deployment playbook
+  hosts: localhost
+  tasks:
+  - name: install pip
+    ansible.builtin.include_role:
+      name: pip
+
+  - name: install dependencies
+    ansible.builtin.include_role:
+      name: dependency
+    vars: 
+      required_dependency:
+        - pandas
+        - openpyxl
+  
+  - name: update rule file to Prometheus
+    ansible.builtin.include_role:
+      name: update-rules
+
+  - name: restart prometheus service
+    ansible.builtin.include_role:
+      name: docker-restart
+    vars:
+      RESTART_SERVER_NAME: prometheus

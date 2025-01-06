@@ -1,0 +1,12 @@
+---
+# tasks file for install_pip
+
+- name: Install pip
+  ansible.builtin.apt:
+    name: "{{ pip_package }}"
+    state: present
+
+- name: Verify pip installation
+  ansible.builtin.command:
+    cmd: pip3 --version
+  register: pip_version_output

@@ -1,0 +1,16 @@
+---
+# tasks file for restart_prometheus
+- name: Get prometheus docker container's name
+  shell: docker ps --format "{{'{{.Names}}'}}" | grep {{ RESTART_SERVER_NAME }}
+  register: running_container_name
+  ignore_errors: true
+  become: true
+
+- name: Verify the container is running
+  ansible.builtin.fail:
+    msg: "No running container found matching the filter: {{ RESTART_SERVER_NAME }}"
+  when: running_container_name.stdout == ""
+
+- name: restart prometheus service
+  shell: docker exec {{ running_container_name.stdout }} kill -s SIGHUP 1
+  become: true

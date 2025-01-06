@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  role_name: download dependency
+  author: Eason Chang
+  description: "Ansible role to download required dependencies for Automated-Telemetry-Monitor"
+  company: FOXCONN
+  license: MIT
+  min_ansible_version: 2.9
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: RedHat
+      versions:
+        - 8
+        - 9
+  categories:
+    - python
+    - dependencies
+dependencies: []

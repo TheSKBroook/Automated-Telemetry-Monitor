@@ -43,7 +43,7 @@
     - name: install dependencies from requirement file
       become: false
       command:
-        cmd: pip install -r deploy/requirements.txt
+        cmd: pip install -r deploy_playbook/requirements.txt
 
 # Step 3: generate rule_file
 - name: Deployment configuration
@@ -53,7 +53,7 @@
 
   - name: Update rule file to Prometheus
     command:
-      python3 feature/converter.py
+      python3 ../update-rule/converter.py
     register: result
 
 # Step 4: Check required services
@@ -88,11 +88,11 @@
       missing_containers | length > 0 and missing_containers | length < 3
 
   - name: Run docker playbook if all containers are missing
-    ansible.builtin.include_tasks: deploy/deploy_docker.yml
+    ansible.builtin.include_tasks: deploy_playbook/deploy_docker.yml
     when: "{{ missing_containers | length == 3 }}"
   
   - name: Run append playbook if all containers are present
-    ansible.builtin.include_tasks: deploy/append_config.yml
+    ansible.builtin.include_tasks: deploy_playbook/append_config.yml
     when: "{{ missing_containers | length == 0 }}"
 
 # Step 5: Check required services

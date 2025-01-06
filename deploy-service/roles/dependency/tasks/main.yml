@@ -1,0 +1,6 @@
+---
+# tasks file for dependency
+- name: install dependencies
+  pip:
+    name: "{{ required_dependency }}"
+    state: present

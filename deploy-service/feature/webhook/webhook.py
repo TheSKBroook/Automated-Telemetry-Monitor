@@ -13,7 +13,7 @@ class Controller:
             extravars = {}
             r = ansible_runner.run(
                 private_data_dir = os.path.join(os.path.dirname(__file__), 'playbook'),
-                playbook='playbook.yml',
+                playbook='test.yml',
                 tags=self.data['alertname'],
                 extravars = {
                     "target": targets.get(self.data['instance'].split(':')[0], None),

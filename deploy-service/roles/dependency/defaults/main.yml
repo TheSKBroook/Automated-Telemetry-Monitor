@@ -1,0 +1,8 @@
+---
+# defaults file for dependency
+required_dependency:
+  - pandas
+  - flask
+  - ansible_runner
+  - openpyxl
+  - requests
