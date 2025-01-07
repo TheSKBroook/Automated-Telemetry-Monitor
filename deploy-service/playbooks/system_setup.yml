@@ -1,0 +1,42 @@
+---
+- name: Verify Internet Connection
+  hosts: localhost
+  connection: local
+  tasks:  
+
+  - name: Check Internet connectivity
+    shell: ping -c 1 8.8.8.8
+    register: internet_status
+    failed_when: internet_status.rc != 0
+
+  - name: Fail if no Internet connection
+    fail:
+      msg: "No Internet connection detected. Please check your network."
+    when: internet_status is failed
+
+- name: Check Ansible Version
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Get Ansible version
+      debug:
+        msg: "Ansible version is newer than 2.10"
+      when: ansible_version.full is version('2.10', '>=')
+
+    - name: Notify if Ansible version is 2.10 or older
+      fail:
+        msg: "Ansible version is 2.10 or older"
+      when: ansible_version.full is version('2.10', '<')
+
+- name: install python required dependencies
+  hosts: local
+  connection: local
+  tasks:
+    - name: install pip 
+      ansible.builtin.include_role:
+        name: pip
+    
+    - name: install dependencies from requirement file
+      ansible.builtin.include_role:
+        name: dependency

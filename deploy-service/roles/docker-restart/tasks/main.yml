@@ -1,6 +1,6 @@
 ---
-# tasks file for restart_prometheus
-- name: Get prometheus docker container's name
+# tasks file for restart_docker
+- name: Get docker container's name
   shell: docker ps --format "{{'{{.Names}}'}}" | grep {{ RESTART_SERVER_NAME }}
   register: running_container_name
   ignore_errors: true

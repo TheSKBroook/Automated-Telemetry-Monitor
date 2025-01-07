@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  role_name: download and config docker components
+  author: Eason Chang
+  description: "download and config prometheus, alertmanager and grafana"
+  company: FOXCONN
+  license: MIT
+  min_ansible_version: 2.9
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: RedHat
+      versions:
+        - 8
+        - 9
+  categories:
+    - docker
+    - system
+dependencies: []

@@ -1,3 +1,6 @@
 ---
 # defaults file for update-rules
-rule_path: /etc/prometheus/rules
+python_path: converter.py
+mounted_rule_path: /etc/prometheus/rules
+SELECT: uodate-rule
+clone_to_destination: true

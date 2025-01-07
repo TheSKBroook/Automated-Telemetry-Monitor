@@ -1,0 +1,48 @@
+---
+# tasks file for docker-components
+- name: Setting up docker images
+  become: true
+  block:
+
+  - name: Ensure Docker images are present
+    shell: docker images | grep {{ item }} | awk '{print $1}'
+    with_items:
+      - prom/prometheus
+      - grafana/grafana
+      - prom/alertmanager
+    ignore_errors: yes
+    register: image_check
+
+  - name: Pull missing Docker images
+    shell: docker pull {{ item }}
+    with_items:
+      - prom/prometheus
+      - grafana/grafana
+      - prom/alertmanager
+    when: item not in image_check.results | map(attribute='stdout') | list
+
+# Step 3: Writing Config
+- name: Deployment configuration
+  block:
+
+  - name: Gather target information from inventory
+    set_fact:
+      host: "{{ ( groups['local'] ) | map('extract', hostvars, 'ansible_host') | list }}"
+      targets: "{{ ( groups['targets'] ) | map('extract', hostvars, 'ansible_host') | list }}"
+      line_token: "{{ hostvars['localhost']['token'] }}"
+      
+  - name: Generate Prometheus configuration file
+    template:
+      src: ../docker/prometheus/prometheus.yml.j2
+      dest: ../docker/prometheus/prometheus.yml
+    vars:
+      host_ip: "{{ host[0] }}"
+      ips: "{{ targets }}"  # Pass all targets after the first one
+
+  - name: Generate alertmanager configuration file
+    template:
+      src: ../docker/alertmanager/alertmanager.yml.j2
+      dest: ../docker/alertmanager/alertmanager.yml
+    vars:
+      webhook_ip: "{{ host[0] }}"
+      line_token: "{{ line_token }}"

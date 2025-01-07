@@ -1,0 +1,23 @@
+---
+# tasks file for prometheus-config
+- name: Find prometheus config path
+  ansible.builtin.include_role:
+    name: mounted-path
+  vars:
+    SEARCH_NAME: prometheus
+
+- name: Appends rule_files in prometheus file
+  blockinfile: 
+    path: "{{ config_path }}"
+    block: |
+      {% filter indent(width=2, first=true) %}
+      - rules/gb200_rules.yml
+      {% endfilter %}
+    insertafter: "^rule_files:"
+  when: config_path is defined
+
+- name: restart prometheus service
+  ansible.builtin.include_role:
+    name: docker-restart
+  vars: 
+    RESTART_SERVER_NAME: prometheus

@@ -2,10 +2,18 @@
 # tasks file for update-rules
   - name: Update rule file to Prometheus
     command:
-      python3 converter.py
+      python3 {{ python_path }}
     register: result
 
   - name: clone rule file into destination
-    command:
-      cp ../deploy-service/docker/prometheus/gb200_rules.yml {{ rule_path }}
     become: true
+    command:
+      cp ../deploy-service/docker/prometheus/gb200_rules.yml {{ mounted_rule_path }}
+    when: clone_to_destination is true and SELECT == 'update-rule'
+  
+  - name: clone rule file into destination
+    become: true
+    command:
+      cp ../docker/prometheus/gb200_rules.yml {{ mounted_rule_path }}
+    when: clone_to_destination is true and SELECT == 'deploy-service'
+    tags: deploy-service

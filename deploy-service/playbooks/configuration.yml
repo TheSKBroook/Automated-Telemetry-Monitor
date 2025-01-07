@@ -1,0 +1,70 @@
+# Configuration 
+- name: Deployment configuration
+  hosts: local
+  connection: local
+  become: true
+  tasks:
+
+  - name: Update rule file to Prometheus
+    ansible.builtin.include_role:
+      name: update-rules
+    vars:
+      python_path: ../../update-rule/converter.py
+      SELECT: deploy-service
+
+  - name: check docker existing 
+    shell: docker ps --format "{{'{{.Names}}'}}" | grep {{ item }}
+    loop: 
+      - prometheus
+      - alertmanager
+      - grafana
+    register: docker_name_result
+    ignore_errors: true
+
+  - name: Check the count of missing containers
+    set_fact:
+      missing_containers: >-
+        {{ docker_name_result.results | selectattr('rc', 'ne', 0) | map(attribute='item') | list }}
+
+  - name: Fail if some but not all containers are missing
+    fail:
+      msg: >-
+        The following containers are missing: {{ missing_containers | join(', ') }}
+        either close all prometheus, alertmanager and grafana to auto-download from this deployment
+        or manually download them via docker image
+    when: >
+      missing_containers | length > 0 and missing_containers | length < 3
+
+  - name: Run docker tasks if all containers are missing
+    block:
+    - name: Check if Docker is installed
+      command: docker --version
+      register: docker_installed
+      ignore_errors: yes
+
+    - name: Installation of docker
+      ansible.builtin.include_role:
+        name: docker-install
+      when: docker_installed is failed
+    
+    - name: Download and Config
+      ansible.builtin.include_role:
+        name: docker-components
+
+    - name: open all the docker
+      shell:
+        cmd: docker-compose up -d&
+      args:
+        chdir: ./docker
+
+    when: missing_containers | length == 3 
+  
+  - name: Run append tasks if all containers are present
+    block: 
+      - name: append prometheus config
+        ansible.builtin.include_role:
+          name: prometheus-config
+      - name: append alertmanager config
+        ansible.builtin.include_role:
+          name: alertmanager-config
+    when: missing_containers | length == 0

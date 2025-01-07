@@ -1,0 +1,33 @@
+---
+- name: Open line and control webhook
+  hosts: local
+  connection: local
+  become: true
+  tasks:  
+    - name: Check if the Docker container exists
+      command: docker ps -a --filter "name=webhook-container" --format "{{'{{.Names}}'}}"
+      register: container_check
+      changed_when: false
+
+    - name: Stop the container if it exists
+      command: docker stop webhook-docker
+      when: container_check.stdout == "webhook-docker"
+
+    - name: Remove the container if it exists
+      command: docker rm webhook-docker
+      when: container_check.stdout == "webhook-docker"
+
+    - name: Check if the Docker image exists
+      command: docker images -q webhook-docker
+      register: image_check
+      changed_when: false
+    
+    - name: Remove the Docker images if it exists
+      command: docker rmi webhook docker
+      when: image_check.stdout == "webhook-docker"
+
+    - name: Build Docker image
+      command: docker build -t webhook-docker .
+
+    - name: Run the Docker container
+      command: docker run -d --name webhook-docker -p 5100:5100 -p 5200:5200 webhook-docker

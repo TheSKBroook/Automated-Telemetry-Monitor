@@ -1,0 +1,29 @@
+---
+# tasks file for mounted-path
+- name: Get all running Docker containers
+  shell: docker ps --format "{{'{{.Names}}'}}"
+  register: running_containers
+
+- name: Find container's name
+  set_fact:
+    container_name: >-
+      {{
+        running_containers.stdout_lines | select("search", SEARCH_NAME) | first
+      }}
+  when: running_containers.stdout_lines | length > 0
+
+# need to know where the mount file is to change 
+- name: Get docker container details
+  shell: docker inspect {{ container_name }}
+  register: docker_inspect_result
+
+- name: Find the mounted path
+  set_fact:
+    config_path: >-
+      {{
+        (docker_inspect_result.stdout | from_json)[0].Mounts
+        | selectattr('Destination', 'equalto', '/etc/' ~ SEARCH_NAME)
+        | map(attribute='Source')
+        | first
+      }}/{{ SEARCH_NAME }}.yml
+  when: docker_inspect_result.stdout is defined

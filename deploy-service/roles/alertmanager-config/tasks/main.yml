@@ -1,0 +1,26 @@
+---
+# tasks file for alertmanager-config
+- name: Gather target information from inventory
+  set_fact:
+    host: "{{ ( groups['local'] ) | map('extract', hostvars, 'ansible_host') | list }}"
+    line_token: "{{ hostvars['localhost']['token'] }}"
+
+- name: Find alertmanager mounted path 
+  ansible.builtin.include_role:
+    name: mounted-path
+  vars:
+    SEARCH_NAME: alertmanager
+
+- name: Generate alertmanager configuration file
+  template:
+    src: ../docker/alertmanager/alertmanager.yml.j2
+    dest: '{{config_path}}'
+  vars:
+    webhook_ip: "{{ host[0] }}"
+    line_token: "{{ line_token }}"
+
+- name: restart alertmanager service
+  ansible.builtin.include_role:
+    name: docker-restart
+  vars: 
+    RESTART_SERVER_NAME: alertmanager

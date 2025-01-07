@@ -1,0 +1,16 @@
+---
+# meta/main.yml for docker-install role
+galaxy_info:
+  author: Eason Chang
+  description: "A role to install Docker on Ubuntu systems."
+  company: FOXCONN
+  license: MIT
+  min_ansible_version: 2.9
+  platforms:
+    - name: Ubuntu
+      versions:
+        - bionic
+        - focal
+        - jammy
+
+dependencies: []

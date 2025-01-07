@@ -17,6 +17,8 @@
   - name: update rule file to Prometheus
     ansible.builtin.include_role:
       name: update-rules
+    vars: 
+      SELECT: update-rule
 
   - name: restart prometheus service
     ansible.builtin.include_role:
