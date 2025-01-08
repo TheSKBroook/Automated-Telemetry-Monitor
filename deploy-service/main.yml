@@ -8,4 +8,4 @@
   import_playbook: playbooks/configuration.yml
 
 - name: create webhook docker
-  import_playbook: webhook_docker.yml
+  import_playbook: playbooks/webhook_docker.yml

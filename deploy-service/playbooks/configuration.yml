@@ -55,7 +55,7 @@
       shell:
         cmd: docker-compose up -d&
       args:
-        chdir: ./docker
+        chdir: ../docker
 
     when: missing_containers | length == 3 
   

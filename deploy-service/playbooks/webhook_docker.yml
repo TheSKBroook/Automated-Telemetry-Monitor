@@ -27,7 +27,21 @@
       when: image_check.stdout == "webhook-docker"
 
     - name: Build Docker image
-      command: docker build -t webhook-docker .
+      command: docker build -t webhook-docker -f feature/Dockerfile .
+      args:
+        chdir: ..
+
+    - name: Ensure SSH private key has correct permissions
+      file:
+        path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
+        mode: '0600'
 
     - name: Run the Docker container
-      command: docker run -d --name webhook-docker -p 5100:5100 -p 5200:5200 webhook-docker
+      command: >
+        docker run -it
+        -d
+        --name webhook-docker
+        -p 5100:5100
+        -p 5200:5200
+        -v {{ lookup('env', 'HOME') }}/.ssh:/root/.ssh:ro
+        webhook-docker
