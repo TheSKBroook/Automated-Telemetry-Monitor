@@ -17,7 +17,7 @@ With config and playbooks, the project can perform counter-action against the sp
 __*The current version supports linux ubuntu system*__  
 
 ## 📜 Architecture Overview
-![Architecture Overview](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/image/images/architecture.png?raw=true)
+![Architecture Overview](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/images/architecture.png)
 
 
 ## ⏯️ Pre-requisite 
@@ -107,26 +107,56 @@ git clone https://github.com/TheSKBroook/Automated-Telemetry-Monitor.git
 ~~~
 -------- __Configuration__ -----------  
 
-Add/edit target(s) information in `inventory.ini` in inventory folder:  
+Add/edit target(s) information in `inventory.ini` in deploy-server folder:  
 
 > example inventory.ini
 ~~~INI
 [local]
-localhost ansible_connection=local ansible_host=130.01.01.2 ansible_become_password=password tocken=
+localhost ansible_host=10.00.00.3 token= ENTER_YOUR_LINE_TOKEN
 
 [targets]
-target1 ansible_host=130.01.01.3  ansible_user=tester ansible_password=password ansible_become_password=password
+target1 ansible_host= 10.00.00.4
+# You can add more targets by:
+# target2 ansible_host=
 ~~~
+
+> [!NOTE]
+> Get Line Notify token from logging into [line](https://notify-bot.line.me/en/). More information can be found [here](https://hackmd.io/@sideex/line-notify-zh).  
+
 
 -------- __Deployment__ -----------  
 
 ~~~
-ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory/inventory.ini deploy_playbook.yml
+cd deploy-server
+ansible-playbook -i inventory.ini deploy_playbook.yml -K
 ~~~
 
 
-## How to use
+## How to use  
 
+> 💁 After deployment, all the docker will be up. You will be able to monitor your target by going on :
+>  -  `localhost:9090` -- prometheus
+>  -  `localhost:9093` -- alertmanager
+>  -  `localhost:3000` -- grafana
+> 
+
+### Adding Rules
+
+You can customized your rules in excel file by either editting or replacing `metrics_excel.xlsx` with your excel file in update-rule folder. 
+
+> [!IMPORTANT]  
+> While adding your own rules, please do follow the expect format in the default excel file.  
+> The screenshots below show the neccessary column which needs to be filled in. ( A ~ C and M ~ R )
+
+![Excel Screenshot1](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/excel_screenshot1.png)
+![Excel Screenshot2](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/excel_screenshot2.png)
+
+After add your rules in, remember to update rules into prometheus by running :  
+
+```
+cd update-rules
+ansible-playbook update-rule.yml -K
+```
 
 ## Demonstration
 
