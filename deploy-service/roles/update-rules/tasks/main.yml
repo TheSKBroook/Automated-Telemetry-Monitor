@@ -5,15 +5,20 @@
       python3 {{ python_path }}
     register: result
 
+  - name: Find prometheus config path
+    ansible.builtin.include_role:
+      name: mounted-path
+    vars:
+      SEARCH_NAME: prometheus
+
   - name: clone rule file into destination
     become: true
     command:
-      cp ../deploy-service/docker/prometheus/gb200_rules.yml {{ mounted_rule_path }}
+      cp ../deploy-service/docker/prometheus/gb200_rules.yml {{ config_path }}
     when: clone_to_destination is true and SELECT == 'update-rule'
   
   - name: clone rule file into destination
     become: true
     command:
-      cp ../docker/prometheus/gb200_rules.yml {{ mounted_rule_path }}
+      cp ../docker/prometheus/gb200_rules.yml {{ config_path }}
     when: clone_to_destination is true and SELECT == 'deploy-service'
-    tags: deploy-service

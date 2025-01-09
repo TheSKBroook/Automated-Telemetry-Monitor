@@ -21,7 +21,7 @@
       - prom/alertmanager
     when: item not in image_check.results | map(attribute='stdout') | list
 
-# Step 3: Writing Config
+# Writing Config
 - name: Deployment configuration
   block:
 
