@@ -148,8 +148,8 @@ You can customized your rules in excel file by either editting or replacing `met
 > While adding your own rules, please do follow the expect format in the default excel file.  
 > The screenshots below show the neccessary column which needs to be filled in. ( A ~ C and M ~ R )
 
-![Excel Screenshot1](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/excel_screenshot1.png)
-![Excel Screenshot2](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/excel_screenshot2.png)
+![Excel Screenshot1](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Excel_Screenshot1.png)
+![Excel Screenshot2](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Excel_Screenshot2.png)
 
 After add your rules in, remember to update rules into prometheus by running :  
 
