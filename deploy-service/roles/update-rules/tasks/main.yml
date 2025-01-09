@@ -12,14 +12,27 @@
     vars:
       SEARCH_NAME: prometheus
 
+  - name: Extract directory path from config_path
+    set_fact:
+      config_dir: "{{ config_path | dirname }}"
+  
+  - name: Check if config_dir matches the relative path
+    set_fact:
+      clone_to_destination: >-
+        {% if config_path | dirname != "../deploy-service/docker/prometheus" %}
+          true
+        {% else %}
+          false
+        {% endif %}
+
   - name: clone rule file into destination
     become: true
     command:
-      cp ../deploy-service/docker/prometheus/gb200_rules.yml {{ config_path }}
+      cp ../deploy-service/docker/prometheus/gb200_rules.yml {{ config_dir }}
     when: clone_to_destination is true and SELECT == 'update-rule'
   
   - name: clone rule file into destination
     become: true
     command:
-      cp ../docker/prometheus/gb200_rules.yml {{ config_path }}
+      cp ../docker/prometheus/gb200_rules.yml {{ config_dir }}
     when: clone_to_destination is true and SELECT == 'deploy-service'
