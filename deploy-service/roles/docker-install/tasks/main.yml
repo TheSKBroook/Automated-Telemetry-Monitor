@@ -1,11 +1,6 @@
 ---
 # tasks file for docker-install
 
-- name: Check if Docker is installed
-  command: docker --version
-  register: docker_installed
-  ignore_errors: yes
-
 - name: Install dependencies for Docker
   apt:
     name: "{{ docker_apt_dependencies }}"

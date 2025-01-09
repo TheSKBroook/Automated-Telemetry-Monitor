@@ -2,15 +2,7 @@
 - name: Deployment configuration
   hosts: local
   connection: local
-  become: true
   tasks:
-
-  - name: Update rule file to Prometheus
-    ansible.builtin.include_role:
-      name: update-rules
-    vars:
-      python_path: ../../update-rule/converter.py
-      SELECT: deploy-service
 
   - name: check docker existing 
     shell: docker ps --format "{{'{{.Names}}'}}" | grep {{ item }}
@@ -19,6 +11,7 @@
       - alertmanager
       - grafana
     register: docker_name_result
+    become: true
     ignore_errors: true
 
   - name: Check the count of missing containers
@@ -36,6 +29,7 @@
       missing_containers | length > 0 and missing_containers | length < 3
 
   - name: Run docker tasks if all containers are missing
+    become: true
     block:
     - name: Check if Docker is installed
       command: docker --version
@@ -51,13 +45,6 @@
       ansible.builtin.include_role:
         name: docker-components
 
-    - name: Update rule file to Prometheus
-      ansible.builtin.include_role:
-        name: update-rules
-      vars:
-        python_path: ../../update-rule/converter.py
-        SELECT: deploy-service
-
     - name: open all the docker
       shell:
         cmd: docker-compose up -d&
@@ -68,12 +55,6 @@
   
   - name: Run append tasks if all containers are present
     block: 
-      - name: Update rule file to Prometheus
-        ansible.builtin.include_role:
-          name: update-rules
-        vars:
-          python_path: ../../update-rule/converter.py
-          SELECT: deploy-service
       - name: append prometheus config
         ansible.builtin.include_role:
           name: prometheus-config
@@ -81,3 +62,16 @@
         ansible.builtin.include_role:
           name: alertmanager-config
     when: missing_containers | length == 0
+
+  - name: Update rule file to Prometheus
+    ansible.builtin.include_role:
+      name: update-rules
+    vars:
+      python_path: ../../update-rule/converter.py
+      SELECT: deploy-service
+  
+  - name: Restart docker prometheus to update
+    ansible.builtin.include_role:
+      name: docker-restart
+    vars:
+      RESTART_SERVER_NAME: prometheus
