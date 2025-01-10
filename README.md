@@ -168,9 +168,11 @@ ansible-playbook update-rule.yml -K
 ![Alertmanager](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/alertmanager.png)
 
 ### Line Notify
-![Line](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/line.png)
+<div align="center">
+  <img src="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Line.png">
+</div>
 
 ## License
-This project is licensed under the MIT License. See the [LICENSE](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/License) file for more details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/LICENSE) file for more details.
 
 
