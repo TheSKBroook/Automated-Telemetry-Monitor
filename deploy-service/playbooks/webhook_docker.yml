@@ -5,7 +5,7 @@
   become: true
   tasks:  
     - name: Check if the Docker container exists
-      command: docker ps -a --filter "name=webhook-container" --format "{{'{{.Names}}'}}"
+      command: docker ps -a --filter "name=webhook-docker" --format "{{'{{.Names}}'}}"
       register: container_check
       changed_when: false
 
