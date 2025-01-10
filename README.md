@@ -148,8 +148,7 @@ You can customized your rules in excel file by either editting or replacing `met
 > While adding your own rules, please do follow the expect format in the default excel file.  
 > The screenshots below show the neccessary column which needs to be filled in. ( A ~ C and M ~ R )
 
-![Excel Screenshot1](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Excel_Screenshot1.png)
-![Excel Screenshot2](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Excel_Screenshot2.png)
+![Excel Screenshot](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Excel_Screenshot.png)
 
 After add your rules in, remember to update rules into prometheus by running :  
 
@@ -158,9 +157,20 @@ cd update-rules
 ansible-playbook update-rule.yml -K
 ```
 
-## Demonstration
+## Demonstration  
+### Prometheus
+![Prometheus](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/prometheus.png?raw=true)
+
+### Grafana
+![Grafana](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/grafana.png)
+
+### Alertmanager
+![Alertmanager](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/alertmanager.png)
+
+### Line Notify
+![Line](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/line.png)
 
 ## License
-
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/License) file for more details.
 
 
