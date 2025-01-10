@@ -3,30 +3,28 @@
 from flask import Flask, request
 import ansible_runner, yaml, os, configparser
 
-class Controller:
-    def __init__ (self, useful_data):
-        self.data = {**useful_data.pop('labels'), **useful_data.pop('annotations'), **useful_data}
-        
+
+def take_action(useful_data):
+    data = {**useful_data.pop('labels'), **useful_data.pop('annotations'), **useful_data}
+
+    if data.get("status") == "firing":
+        extravars = {}
+        r = ansible_runner.run(
+            private_data_dir = os.path.join(os.path.dirname(__file__), 'playbook'),
+            playbook='test.yml',
+            tags=data['alertname'],
+            extravars = {
+                "target": targets.get(data['instance'].split(':')[0], None),
+                **data
+            },
+            inventory=inventory_file
+        )
     
-    def take_action(self):
-        if self.data.get("status") == "firing":
-            extravars = {}
-            r = ansible_runner.run(
-                private_data_dir = os.path.join(os.path.dirname(__file__), 'playbook'),
-                playbook='test.yml',
-                tags=self.data['alertname'],
-                extravars = {
-                    "target": targets.get(self.data['instance'].split(':')[0], None),
-                    **self.data
-                },
-                inventory=inventory_file
-                )
-        
-        elif self.data["status"] == "resolved":
-            ip = self.data["instance"].split(":")[0]
-            print(
-                "\nAlert ({}) from {} has been resolved.\n".format(self.data["alertname"], ip)
-            )
+    elif data["status"] == "resolved":
+        ip = data["instance"].split(":")[0]
+        print(
+            "\nAlert ({}) from {} has been resolved.\n".format(data["alertname"], ip)
+        )
 
 inventory_file = os.path.abspath('inventory.ini')
 
@@ -48,10 +46,8 @@ def hook():
 
     useful_data = {**yaml_data.get("alerts")[0]}
 
-    myController = Controller(useful_data)
+    take_action(useful_data)
 
-    myController.take_action()
-    
     return request.data
 
 if __name__ == "__main__":

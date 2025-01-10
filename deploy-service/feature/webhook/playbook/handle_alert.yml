@@ -1,0 +1,75 @@
+#########################
+### AUTOMATE PLAYBOOK ###
+#########################
+# 
+# You can add your own playbook below just by changing the tag and tasks
+#
+################
+### TEMPLATE ###
+################
+# 
+# - name: NAME_OF_YOUR_PLAY
+#   hosts: "{{ target }}"
+#   tags: ALERT_NAME + _Warning or _Critical
+#   tasks:
+#     - name: TASK_NAME
+#       ... write your tasks here ...
+#
+################
+### VARIABLE ###
+################
+#
+#
+# node-exporter : status, alertname, instance, job, severity, description, summary, startsAt, endsAt, generatorURL, fingerprint
+# process-exporter : status, alertname, instance, groupname, severity, description, summary, startsAt, endsAt, generatorURL, fingerprint
+# 
+# Anyother variable will be parse from extravars in webhook.py
+#
+#
+#######################
+### PLAYBOOK Script ###
+#######################
+---
+# 1. handle HostHighCpuLoad
+- name: Automate CPU high usage monitoring and kill process
+  hosts: "{{ target }}"
+  tags: HeavyCpuUsage_Warning
+  tasks:
+
+    - name: Ask who am i
+      ansible.builtin.shell: whoami
+      register: result
+    
+    - name: Debug result
+      debug:
+        msg: "{{ result.stdout }}"
+
+    - name: Debug process_name
+      debug:
+        msg: "{{ groupname }}"
+
+
+    - name: Find process ID by name
+      ansible.builtin.shell: ps -e -o pid,comm | grep -w "{{ groupname }}" | awk '{print $1}'
+      register: process_pid
+      ignore_errors: yes
+
+    - name: Debug process id output
+      debug:
+        msg: "{{ process_pid.stdout }}"
+
+
+    - name: Kill the process if it is running
+      ansible.builtin.shell: "kill -9 {{ item }}"
+      loop: "{{ process_pid.stdout_lines }}"
+      when: process_pid.stdout_lines | length > 0
+      ignore_errors: yes
+#
+#
+#
+###########
+### END ###
+###########
+
+
+
