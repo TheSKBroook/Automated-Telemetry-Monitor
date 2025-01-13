@@ -1,0 +1,10 @@
+---
+- name: Deployment playbook
+  hosts: localhost
+  tasks:
+
+  - name: restart webhook-docker service
+    ansible.builtin.include_role:
+      name: docker-restart
+    vars:
+      RESTART_SERVER_NAME: webhook-docker

@@ -10,6 +10,7 @@ COPY inventory.ini /app/
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
+    procps \
     openssh-client \
     && rm -rf /var/lib/apt/lists/*
 

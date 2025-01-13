@@ -21,10 +21,10 @@
       command: docker images -q webhook-docker
       register: image_check
       changed_when: false
-    
-    - name: Remove the Docker images if it exists
-      command: docker rmi webhook docker
-      when: image_check.stdout == "webhook-docker"
+
+    - name: Remove the Docker image if it exists
+      command: docker rmi webhook-docker
+      when: image_check.stdout != ""
 
     - name: Build Docker image
       command: docker build -t webhook-docker -f feature/Dockerfile .
@@ -36,6 +36,10 @@
         path: "{{ lookup('env', 'HOME') }}/.ssh/id_rsa"
         mode: '0600'
 
+    - name: Get the absolute path of the playbook directory
+      command: realpath ../feature/webhook/playbook/handle_alert
+      register: absolute_path
+
     - name: Run the Docker container
       command: >
         docker run -it
@@ -44,4 +48,6 @@
         -p 5100:5100
         -p 5200:5200
         -v {{ lookup('env', 'HOME') }}/.ssh:/root/.ssh:ro
+        -v {{ absolute_path.stdout }}.yml:/app/webhook/playbook/handle_alert.yml
         webhook-docker
+
