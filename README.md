@@ -3,14 +3,14 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image">
-    <img src="images/icon.png" alt="Icon" width="80" height="80">
+  <a href="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/images/icon.png">
+    <img src="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/images/icon.png" alt="Icon" width="150" height="150">
   </a>
 
   <h2 align="center">Automated Telemetry Monitor</h2>
 
   <p align="center">
-    A very very useful monitor 
+    A smart monitor transforming telemetry data into actions and real-time alerts!
     <br />
     <br />
     <a href="https://github.com/TheSKBroook/Automated-Telemetry-Monitor"><strong>Explore the docs »</strong></a>
@@ -207,7 +207,7 @@ Here is an easy template for you to follow :
 > __Here are some variables you might find useful :__
 >
 > __general__ : `status`, `alertname`, `instance`, `severity`, `description`, `summary`, `startsAt`, `endsAt`, `generatorURL`, `fingerprint`  
-> __extra__ : _node-exporter_ ---- `job`  // _process-exporter_ ---- `groupname`  
+> __extra__ :  `job` ( _node-exporter_ ), `groupname` ( _process-exporter_ )
 >  
 > Any other variables will need to be parsed from `extravars` in `webhook.py`
 
