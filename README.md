@@ -1,7 +1,30 @@
+<a id="readme-top"></a>
 
-# Automated Telemetry Monitor
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <a href="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image">
+    <img src="images/icon.png" alt="Icon" width="80" height="80">
+  </a>
 
-## ℹ️ Overview
+  <h2 align="center">Automated Telemetry Monitor</h2>
+
+  <p align="center">
+    A very very useful monitor 
+    <br />
+    <br />
+    <a href="https://github.com/TheSKBroook/Automated-Telemetry-Monitor"><strong>Explore the docs »</strong></a>
+    <br />
+    <br />
+    <a href="https://github.com/TheSKBroook/Automated-Telemetry-Monitor">View Demo</a>
+    &middot;
+    <a href="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    &middot;
+    <a href="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+  </p>
+</div>
+
+## ℹ️ About this project 
 
 The Automated Telemetry Monitor is a powerful solution designed to monitor and manage telemetry data efficiently from target nodes. It integrates Prometheus, Grafana, and Alertmanager for data collection, visualization, and alerting.  
 
@@ -13,17 +36,20 @@ With config and playbooks, the project can perform counter-action against the sp
 - Provide a visual way to anaylyse data
 - Fire alerts with pre-defined rules with the option of sending via LINE
 - Event-driven actions against specific alert
-
 __*The current version supports linux ubuntu system*__  
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## 📜 Architecture Overview
 ![Architecture Overview](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/images/architecture.png)
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## ⏯️ Pre-requisite 
 
-#### __Download ansible for HOST ( 2.10 above )__  
-
+<details>
+<summary><b>Download ansible for HOST ( 2.10 above )</b></summary>
+<hr>
 --------- Will be used in configuring and deploying -----------  
 
 install pip:  
@@ -38,7 +64,11 @@ sudo apt install ansible
 python3 -m pip install --user ansible
 ~~~
 
-#### __Download node_exporter and process_exporter for Targets ( via docker )__  
+</details>
+
+<details>
+<summary><b>Download node_exporter and process_exporter for Targets ( via docker )</b></summary>
+<hr>
 
 -------- __Installation Image__ ----------- 
 
@@ -93,10 +123,12 @@ services:
     ports:
       - 9256:9256
 ~~~
+</details>
 
 > [!NOTE]
-> If you want install them in other ways, check out [node_exporter](https://prometheus.io/docs/guides/node-exporter/) and [process_exporter](https://github.com/ncabatoff/process-exporter)
+> If you want to install them in another way, check out [node_exporter](https://prometheus.io/docs/guides/node-exporter/) and [process_exporter](https://github.com/ncabatoff/process-exporter)
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## 🖥️ Install & Deploy
 -------- __Installation__ -----------  
@@ -107,7 +139,7 @@ git clone https://github.com/TheSKBroook/Automated-Telemetry-Monitor.git
 ~~~
 -------- __Configuration__ -----------  
 
-Add/edit target(s) information in `inventory.ini` in deploy-server folder:  
+Add or edit target information in `inventory.ini` located in the `deploy-server` folder:  
 
 > example inventory.ini
 ~~~INI
@@ -121,7 +153,7 @@ target1 ansible_host= 10.00.00.4
 ~~~
 
 > [!NOTE]
-> Get Line Notify token from logging into [line](https://notify-bot.line.me/en/). More information can be found [here](https://hackmd.io/@sideex/line-notify-zh).  
+> Get Line Notify token from [Line](https://notify-bot.line.me/en/). More information can be found [here](https://hackmd.io/@sideex/line-notify-zh).  
 
 
 -------- __Deployment__ -----------  
@@ -131,10 +163,11 @@ cd deploy-server
 ansible-playbook -i inventory.ini deploy_playbook.yml -K
 ~~~
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## How to use  
 
-> 💁 After deployment, all the docker will be up. You will be able to monitor your target by going on :
+> 💁 After deployment, all Docker containers will be running. You will be able to monitor your target by navigating to :
 >  -  `localhost:9090` -- prometheus
 >  -  `localhost:9093` -- alertmanager
 >  -  `localhost:3000` -- grafana
@@ -142,22 +175,53 @@ ansible-playbook -i inventory.ini deploy_playbook.yml -K
 
 ### Adding Rules
 
-You can customized your rules in excel file by either editting or replacing `metrics_excel.xlsx` with your excel file in update-rule folder. 
+You can customize your rules in an Excel file by either editing or replacing `metrics_excel.xlsx` with your own file in the `update-rule` folder.  
 
 > [!IMPORTANT]  
-> While adding your own rules, please do follow the expect format in the default excel file.  
+> While adding your own rules, please follow the expected format in the default Excel file.  
 > The screenshots below show the neccessary column which needs to be filled in. ( A ~ C and M ~ R )
 
 ![Excel Screenshot](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Excel_Screenshot.png)
 
-After add your rules in, remember to update rules into prometheus by running :  
+After adding your rules, remember to update them in Prometheus by running:  
 
 ```
 cd update-rules
 ansible-playbook update-rule.yml -K
 ```
 
+### Adding Action Playbook
+
+Feel free to add your own playbook in `handle_alert.yml` for event-driven actions.  
+Here is an easy template for you to follow :
+
+```
+# - name: NAME_OF_YOUR_PLAY
+#   hosts: "{{ target }}"
+#   tags: ALERT_NAME + _Warning or _Critical
+#   tasks:
+#     - name: TASK_NAME
+#       ... write your tasks here ..
+```
+> [!NOTE]  
+> __Here are some variables you might find useful :__
+>
+> __general__ : `status`, `alertname`, `instance`, `severity`, `description`, `summary`, `startsAt`, `endsAt`, `generatorURL`, `fingerprint`  
+> __extra__ : _node-exporter_ ---- `job`  // _process-exporter_ ---- `groupname`  
+>  
+> Any other variables will need to be parsed from `extravars` in `webhook.py`
+
+Once you have finished editting, update the file in the `update` directory by running:  
+```  
+
+  ansible-playbook update-playbook.yml -K
+
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Demonstration  
+Here are some screenshots for demonstration:  
 ### Prometheus
 ![Prometheus](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/prometheus.png?raw=true)
 
@@ -172,7 +236,9 @@ ansible-playbook update-rule.yml -K
   <img src="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Line.png">
 </div>
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## License
 This project is licensed under the MIT License. See the [LICENSE](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/LICENSE) file for more details.
 
-
+<p align="right">(<a href="#readme-top">back to top</a>)</p>

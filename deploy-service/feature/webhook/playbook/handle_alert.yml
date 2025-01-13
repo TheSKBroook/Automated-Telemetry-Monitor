@@ -23,7 +23,7 @@
 # node-exporter : status, alertname, instance, job, severity, description, summary, startsAt, endsAt, generatorURL, fingerprint
 # process-exporter : status, alertname, instance, groupname, severity, description, summary, startsAt, endsAt, generatorURL, fingerprint
 # 
-# Anyother variable will be parse from extravars in webhook.py
+# Any other variable will be parse from extravars in webhook.py
 #
 #
 #######################
