@@ -8,7 +8,6 @@
   </a>
 
   <h2 align="center">Automated Telemetry Monitor</h2>
-
   <p align="center">
     A smart monitor transforming telemetry data into actions and real-time alerts!
     <br />
@@ -16,7 +15,7 @@
     <a href="https://github.com/TheSKBroook/Automated-Telemetry-Monitor"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/TheSKBroook/Automated-Telemetry-Monitor">View Demo</a>
+    <a href="#demostration">View Demo</a>
     &middot;
     <a href="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     &middot;
@@ -36,12 +35,15 @@ With config and playbooks, the project can perform counter-action against the sp
 - Provide a visual way to anaylyse data
 - Fire alerts with pre-defined rules with the option of sending via LINE
 - Event-driven actions against specific alert
+
 __*The current version supports linux ubuntu system*__  
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## 📜 Architecture Overview
-![Architecture Overview](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/images/architecture.png)
+<div align="center">
+  <img src="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/images/architecture.png">
+</div>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -70,16 +72,20 @@ python3 -m pip install --user ansible
 <summary><b>Download node_exporter and process_exporter for Targets ( via docker )</b></summary>
 <hr>
 
+💁 _If you want to install them in another way, check out [node_exporter](https://prometheus.io/docs/guides/node-exporter/) and [process_exporter](https://github.com/ncabatoff/process-exporter)_
+
+<hr>
+
 -------- __Installation Image__ ----------- 
 
-~~~
+~~~shell
   docker pull prom/node-exporterversion: '3.8'
   docker pull ncabatoff/process-exporter
 ~~~  
 
 -------- __Configuration__ --------  
 
-~~~
+~~~shell
 mkdir config
 nano config/config.yml
   process_names:
@@ -91,7 +97,7 @@ nano config/config.yml
 -------- __Docker Compose__ --------  
 
 > __docker-compose.yml__
-~~~
+~~~yaml
 nano docker-compose.yml
   version: '3.8'
 services:
@@ -122,11 +128,8 @@ services:
     restart: unless-stopped
     ports:
       - 9256:9256
-~~~
+~~~  
 </details>
-
-> [!NOTE]
-> If you want to install them in another way, check out [node_exporter](https://prometheus.io/docs/guides/node-exporter/) and [process_exporter](https://github.com/ncabatoff/process-exporter)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -134,7 +137,7 @@ services:
 -------- __Installation__ -----------  
 
 Clone the project to your local repo
-~~~
+~~~shell
 git clone https://github.com/TheSKBroook/Automated-Telemetry-Monitor.git
 ~~~
 -------- __Configuration__ -----------  
@@ -158,7 +161,7 @@ target1 ansible_host= 10.00.00.4
 
 -------- __Deployment__ -----------  
 
-~~~
+~~~shell
 cd deploy-server
 ansible-playbook -i inventory.ini deploy_playbook.yml -K
 ~~~
@@ -185,7 +188,7 @@ You can customize your rules in an Excel file by either editing or replacing `me
 
 After adding your rules, remember to update them in Prometheus by running:  
 
-```
+```shell
 cd update-rules
 ansible-playbook update-rule.yml -K
 ```
@@ -195,16 +198,16 @@ ansible-playbook update-rule.yml -K
 Feel free to add your own playbook in `handle_alert.yml` for event-driven actions.  
 Here is an easy template for you to follow :
 
-```
-# - name: NAME_OF_YOUR_PLAY
-#   hosts: "{{ target }}"
-#   tags: ALERT_NAME + _Warning or _Critical
-#   tasks:
-#     - name: TASK_NAME
-#       ... write your tasks here ..
+```yaml
+- name: NAME_OF_YOUR_PLAY
+  hosts: "{{ target }}"
+  tags: ALERT_NAME + _Warning or _Critical
+  tasks:
+    - name: TASK_NAME
+      # ... write your tasks here ..
 ```
 > [!NOTE]  
-> __Here are some variables you might find useful :__
+> __The variables listed below are included in the default request that Alertmanager sends to the webhook server.__  
 >
 > __general__ : `status`, `alertname`, `instance`, `severity`, `description`, `summary`, `startsAt`, `endsAt`, `generatorURL`, `fingerprint`  
 > __extra__ :  `job` ( _node-exporter_ ), `groupname` ( _process-exporter_ )
@@ -212,7 +215,7 @@ Here is an easy template for you to follow :
 > Any other variables will need to be parsed from `extravars` in `webhook.py`
 
 Once you have finished editting, update the file in the `update` directory by running:  
-```  
+```shell
 
   ansible-playbook update-playbook.yml -K
 
@@ -220,22 +223,38 @@ Once you have finished editting, update the file in the `update` directory by ru
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<a id="demostration"></a>
+
 ## Demonstration  
-Here are some screenshots for demonstration:  
+
+<div align="center">
+
+Take a look at these screenshots to see it in action!
+
 ### Prometheus
-![Prometheus](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/prometheus.png?raw=true)
+![Prometheus](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/prometheus.png?raw=true)  
+
+__Query and explore your telemetry metrics in real time with Prometheus.__
+<hr>
 
 ### Grafana
-![Grafana](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/grafana.png)
+![Grafana](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/grafana.png)  
+
+__Visualize your data with customizable dashboards in Grafana.__
+<hr>
 
 ### Alertmanager
-![Alertmanager](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/alertmanager.png)
+![Alertmanager](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/alertmanager.png)  
+
+__Manage and view alert notifications efficiently with Alertmanager.__
+<hr>
 
 ### Line Notify
-<div align="center">
-  <img src="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Line.png">
-</div>
+![Line](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Line.png)  
 
+__Receive instant alerts on your LINE app for critical events.__
+
+</div>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## License
