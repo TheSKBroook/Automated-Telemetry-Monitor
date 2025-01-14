@@ -189,7 +189,7 @@ You can customize your rules in an Excel file by either editing or replacing `me
 After adding your rules, remember to update them in Prometheus by running:  
 
 ```shell
-cd update-rules
+cd update
 ansible-playbook update-rule.yml -K
 ```
 
