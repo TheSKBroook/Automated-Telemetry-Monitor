@@ -163,7 +163,7 @@ target1 ansible_host= 10.00.00.4 ansible_user=test
 
 In deploy_server directory :    
 ~~~shell
-ansible-playbook -i inventory.ini main_playbook.yml -K
+ansible-playbook -i inventory.ini main.yml -K
 ~~~
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
