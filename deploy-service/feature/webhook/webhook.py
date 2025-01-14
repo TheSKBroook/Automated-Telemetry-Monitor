@@ -11,7 +11,7 @@ def take_action(useful_data):
         extravars = {}
         r = ansible_runner.run(
             private_data_dir = os.path.join(os.path.dirname(__file__), 'playbook'),
-            playbook='test.yml',
+            playbook='handle_alert.yml',
             tags=data['alertname'],
             extravars = {
                 "target": targets.get(data['instance'].split(':')[0], None),
