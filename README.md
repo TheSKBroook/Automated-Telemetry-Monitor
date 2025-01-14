@@ -147,10 +147,10 @@ Add or edit target information in `inventory.ini` located in the `deploy-server`
 > example inventory.ini
 ~~~INI
 [local]
-localhost ansible_host=10.00.00.3 token= ENTER_YOUR_LINE_TOKEN
+localhost ansible_host=10.00.00.3 ansible_user=test token= ENTER_YOUR_LINE_TOKEN
 
 [targets]
-target1 ansible_host= 10.00.00.4
+target1 ansible_host= 10.00.00.4 ansible_user=test
 # You can add more targets by:
 # target2 ansible_host=
 ~~~
@@ -161,9 +161,9 @@ target1 ansible_host= 10.00.00.4
 
 -------- __Deployment__ -----------  
 
+In deploy_server directory :    
 ~~~shell
-cd deploy-server
-ansible-playbook -i inventory.ini deploy_playbook.yml -K
+ansible-playbook -i inventory.ini main_playbook.yml -K
 ~~~
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
