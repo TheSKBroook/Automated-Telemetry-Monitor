@@ -67,7 +67,7 @@
     ansible.builtin.include_role:
       name: update-rules
     vars:
-      python_path: ../../update-rule/converter.py
+      python_path: ../../update/converter.py
       SELECT: deploy-service
   
   - name: Restart docker prometheus to update
