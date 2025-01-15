@@ -147,10 +147,10 @@ Add or edit target information in `inventory.ini` located in the `deploy-server`
 > example inventory.ini
 ~~~INI
 [local]
-localhost ansible_host=10.00.00.3 token= ENTER_YOUR_LINE_TOKEN
+localhost ansible_host=10.00.00.3 ansible_user=test token= ENTER_YOUR_LINE_TOKEN
 
 [targets]
-target1 ansible_host= 10.00.00.4
+target1 ansible_host= 10.00.00.4 ansible_user=test
 # You can add more targets by:
 # target2 ansible_host=
 ~~~
@@ -161,9 +161,9 @@ target1 ansible_host= 10.00.00.4
 
 -------- __Deployment__ -----------  
 
+In deploy_server directory :    
 ~~~shell
-cd deploy-server
-ansible-playbook -i inventory.ini deploy_playbook.yml -K
+ansible-playbook -i inventory.ini main.yml -K
 ~~~
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -178,7 +178,7 @@ ansible-playbook -i inventory.ini deploy_playbook.yml -K
 
 ### Adding Rules
 
-You can customize your rules in an Excel file by either editing or replacing `metrics_excel.xlsx` with your own file in the `update-rule` folder.  
+You can customize your rules in an Excel file by either editing or replacing `metrics_excel.xlsx` with your own file in the `update` folder.  
 
 > [!IMPORTANT]  
 > While adding your own rules, please follow the expected format in the default Excel file.  
@@ -189,13 +189,13 @@ You can customize your rules in an Excel file by either editing or replacing `me
 After adding your rules, remember to update them in Prometheus by running:  
 
 ```shell
-cd update-rules
+cd update
 ansible-playbook update-rule.yml -K
 ```
 
 ### Adding Action Playbook
 
-Feel free to add your own playbook in `handle_alert.yml` for event-driven actions.  
+Feel free to add your own playbook in `handle_alert.yml` in `update` folder for event-driven actions.  
 Here is an easy template for you to follow :
 
 ```yaml
@@ -213,13 +213,6 @@ Here is an easy template for you to follow :
 > __extra__ :  `job` ( _node-exporter_ ), `groupname` ( _process-exporter_ )
 >  
 > Any other variables will need to be parsed from `extravars` in `webhook.py`
-
-Once you have finished editting, update the file in the `update` directory by running:  
-```shell
-
-  ansible-playbook update-playbook.yml -K
-
-```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

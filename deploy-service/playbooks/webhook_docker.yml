@@ -37,7 +37,7 @@
         mode: '0600'
 
     - name: Get the absolute path of the playbook directory
-      command: realpath ../feature/webhook/playbook/handle_alert
+      command: realpath ../../update/handle_alert
       register: absolute_path
 
     - name: Run the Docker container
