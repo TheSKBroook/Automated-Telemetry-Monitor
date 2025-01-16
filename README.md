@@ -181,10 +181,13 @@ ansible-playbook -i inventory.ini main.yml -K
 You can customize your rules in an Excel file by either editing or replacing `metrics_excel.xlsx` with your own file in the `update` folder.  
 
 > [!IMPORTANT]  
-> While adding your own rules, please follow the expected format in the default Excel file.  
-> The screenshots below show the neccessary column which needs to be filled in. ( A ~ C and M ~ R )
+> While adding your own rules, please follow the expected format in the default Excel file.
+>  - Blue section are required to be filled in. ( A and B and M ~ R )
+>  - Enter `Y` or `N` in `Enable` section to enable rules.
+>  - To create both Warning and Critical severity rules, separating them with a new line, and apply the same approach to the expressions.
 
-![Excel Screenshot](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Excel_Screenshot.png)
+![Excel Screenshot](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Excel_Screenshot1.png)
+![Excel Screenshot](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Excel_Screenshot2.png)
 
 After adding your rules, remember to update them in Prometheus by running:  
 
