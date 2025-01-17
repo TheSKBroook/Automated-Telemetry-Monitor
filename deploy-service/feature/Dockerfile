@@ -23,9 +23,3 @@ RUN pip install --no-cache-dir --upgrade pip && \
 EXPOSE 5100 5200
 
 CMD ["sh", "-c", "python3 webhook/webhook.py > webhook.log 2>&1 & python3 line/line.py > line.log 2>&1 & wait"]
-
-# CMD ["sh", "-c", "python3 line/line.py > line.log 2>&1 & wait"]
-
-# CMD ["sh", "-c", "python3 webhook/webhook.py > webhook.log 2>&1 wait"]
-
-# CMD ["sh", "-c", "python3 control.py & python3 line/line.py & wait"]

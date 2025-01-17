@@ -23,6 +23,27 @@
   </p>
 </div>
 
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-this-project ">About The Project</a>
+    </li>
+    <li>
+      <a href="#Architecture-Overview">Architecture Overview</a>
+    </li>
+    <li><a href="#How-to-use">How to use</a></li>
+      <ul>
+        <li><a href="#prerequisites">Adding Rules</a></li>
+        <li><a href="#installation">Adding Action Playbook</a></li>
+      </ul>
+    <li><a href="#Install-and-Deploy">Pre-requisite, Install and Deploy</a></li>
+    <li><a href="#Demonstration">Demonstration</a></li>
+    <li><a href="#licence">Licence</a></li>
+  </ol>
+</details>
+
 ## ℹ️ About this project 
 
 The Automated Telemetry Monitor is a powerful solution designed to monitor and manage telemetry data efficiently from target nodes. It integrates Prometheus, Grafana, and Alertmanager for data collection, visualization, and alerting.  
@@ -48,6 +69,57 @@ __*The current version supports linux ubuntu system*__
 <div align="center">
   <img src="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/images/architecture.png">
 </div>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## How to use  
+
+> 💁 After deployment, all Docker containers will be running. You will be able to monitor your target by navigating to :
+>  -  `localhost:9090` -- prometheus
+>  -  `localhost:9093` -- alertmanager
+>  -  `localhost:3000` -- grafana
+> 
+
+### Adding Rules
+
+You can customize your rules in an Excel file by either editing or replacing `metrics_excel.xlsx` with your own file in the `update` folder.  
+
+> [!IMPORTANT]  
+> While adding your own rules, please follow the expected format in the default Excel file.
+>  - Blue section are required to be filled in. ( A and B and M ~ R )
+>  - Enter `Y` or `N` in `Enable` section to enable rules.
+>  - To create both Warning and Critical severity rules, separating them with a new line, and apply the same approach to the expressions.
+
+![Excel Screenshot](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Excel_Screenshot1.png)
+![Excel Screenshot](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Excel_Screenshot2.png)
+
+After adding your rules, remember to update them in Prometheus by running:  
+
+```shell
+cd update
+ansible-playbook update-rule.yml -K
+```
+
+### Adding Action Playbook
+
+Feel free to add your own playbook in `handle_alert.yml` in `update` folder for event-driven actions.  
+Here is an easy template for you to follow :
+
+```yaml
+- name: NAME_OF_YOUR_PLAY
+  hosts: "{{ target }}"
+  tags: ALERT_NAME + _Warning or _Critical
+  tasks:
+    - name: TASK_NAME
+      # ... write your tasks here ..
+```
+> [!NOTE]  
+> __The variables listed below are included in the default request that Alertmanager sends to the webhook server.__  
+>
+> __general__ : `status`, `alertname`, `instance`, `severity`, `description`, `summary`, `startsAt`, `endsAt`, `generatorURL`, `fingerprint`  
+> __extra__ :  `job` ( _node-exporter_ ), `groupname` ( _process-exporter_ )
+>  
+> Any other variables will need to be parsed from `extravars` in `webhook.py`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -138,6 +210,11 @@ services:
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## 🖥️ Install & Deploy
+<div align="center">
+  <h2 align="center" style="font-weight: bold">Flow Chart</h2>
+  <img src="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/images/deployment_chart.png">
+</div>
+
 -------- __Installation__ -----------  
 
 Clone the project to your local repo
@@ -169,57 +246,6 @@ In deploy_server directory :
 ~~~shell
 ansible-playbook -i inventory.ini main.yml -K
 ~~~
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-## How to use  
-
-> 💁 After deployment, all Docker containers will be running. You will be able to monitor your target by navigating to :
->  -  `localhost:9090` -- prometheus
->  -  `localhost:9093` -- alertmanager
->  -  `localhost:3000` -- grafana
-> 
-
-### Adding Rules
-
-You can customize your rules in an Excel file by either editing or replacing `metrics_excel.xlsx` with your own file in the `update` folder.  
-
-> [!IMPORTANT]  
-> While adding your own rules, please follow the expected format in the default Excel file.
->  - Blue section are required to be filled in. ( A and B and M ~ R )
->  - Enter `Y` or `N` in `Enable` section to enable rules.
->  - To create both Warning and Critical severity rules, separating them with a new line, and apply the same approach to the expressions.
-
-![Excel Screenshot](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Excel_Screenshot1.png)
-![Excel Screenshot](https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/screenshots/Excel_Screenshot2.png)
-
-After adding your rules, remember to update them in Prometheus by running:  
-
-```shell
-cd update
-ansible-playbook update-rule.yml -K
-```
-
-### Adding Action Playbook
-
-Feel free to add your own playbook in `handle_alert.yml` in `update` folder for event-driven actions.  
-Here is an easy template for you to follow :
-
-```yaml
-- name: NAME_OF_YOUR_PLAY
-  hosts: "{{ target }}"
-  tags: ALERT_NAME + _Warning or _Critical
-  tasks:
-    - name: TASK_NAME
-      # ... write your tasks here ..
-```
-> [!NOTE]  
-> __The variables listed below are included in the default request that Alertmanager sends to the webhook server.__  
->
-> __general__ : `status`, `alertname`, `instance`, `severity`, `description`, `summary`, `startsAt`, `endsAt`, `generatorURL`, `fingerprint`  
-> __extra__ :  `job` ( _node-exporter_ ), `groupname` ( _process-exporter_ )
->  
-> Any other variables will need to be parsed from `extravars` in `webhook.py`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
