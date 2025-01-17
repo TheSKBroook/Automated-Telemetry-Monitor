@@ -28,23 +28,23 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
-      <a href="#about-this-project ">About The Project</a>
+      <a href="#About-this-project ">About this project</a>
     </li>
     <li>
       <a href="#Architecture-Overview">Architecture Overview</a>
     </li>
     <li><a href="#How-to-use">How to use</a></li>
       <ul>
-        <li><a href="#prerequisites">Adding Rules</a></li>
-        <li><a href="#installation">Adding Action Playbook</a></li>
+        <li><a href="#Adding-Rules">Adding Rules</a></li>
+        <li><a href="#Adding-Action-Playbook">Adding Action Playbook</a></li>
       </ul>
-    <li><a href="#Install-and-Deploy">Pre-requisite, Install and Deploy</a></li>
+    <li><a href="#Pre-requisite">Pre-requisite, Install and Deploy</a></li>
     <li><a href="#Demonstration">Demonstration</a></li>
-    <li><a href="#licence">Licence</a></li>
+    <li><a href="#License">License</a></li>
   </ol>
 </details>
 
-## ℹ️ About this project 
+## About this project 
 
 The Automated Telemetry Monitor is a powerful solution designed to monitor and manage telemetry data efficiently from target nodes. It integrates Prometheus, Grafana, and Alertmanager for data collection, visualization, and alerting.  
 
@@ -65,7 +65,7 @@ __*The current version supports linux ubuntu system*__
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## 📜 Architecture Overview
+## Architecture Overview
 <div align="center">
   <img src="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/images/architecture.png">
 </div>
@@ -123,7 +123,7 @@ Here is an easy template for you to follow :
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## ⏯️ Pre-requisite 
+## Pre-requisite 
 
 <details>
 <summary><b>Download ansible for HOST ( 2.10 above )</b></summary>
@@ -212,7 +212,7 @@ services:
 ## 🖥️ Install & Deploy
 <div align="center">
   <h2 align="center" style="font-weight: bold">Flow Chart</h2>
-  <img src="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/images/deployment_chart.png">
+  <img src="https://github.com/TheSKBroook/Automated-Telemetry-Monitor/blob/main/github-image/images/deployment_chart.png" width="750" height="1000">
 </div>
 
 -------- __Installation__ -----------  
