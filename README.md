@@ -59,9 +59,6 @@ With config and playbooks, the project can perform counter-action against the sp
 
 __*The current version supports linux ubuntu system*__  
 
-> [!Warning]
-> __*Unfortunately, LINE Notify will end on March 31, 2025. We will be looking for alternative solutions to replace its functionality.*__
-
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -281,6 +278,11 @@ __Manage and view alert notifications efficiently with Alertmanager.__
 __Receive instant alerts on your LINE app for critical events.__
 
 </div>
+
+> [!Warning]
+> __*Unfortunately, LINE Notify will end on March 31, 2025. We will be looking for alternative solutions to replace its functionality.*__
+
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## License
